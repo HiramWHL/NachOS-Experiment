@@ -27,7 +27,29 @@ int SysAdd(int op1, int op2)
   return op1 + op2;
 }
 
+int SysSub(int op1, int op2)
+{
+  return op1 - op2;
+}
 
+int SysMult(int op1, int op2)
+{
+  return op1 * op2;
+}
+
+int SysDiv(int op1, int op2)
+{
+  return op1 / op2;
+}
+
+int SysPow(int op1, int op2)
+{
+  int i;
+  for(i=1;i<op2;i++){
+	  op1=op1*op1;
+  }
+  return op1;
+}
 
 
 
