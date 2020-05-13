@@ -22,6 +22,8 @@
 #include "synch.h"
 #include "sysdep.h"
 
+int Thread::threadNum=0;
+
 // this is put at the top of the execution stack, for detecting stack overflows
 const int STACK_FENCEPOST = 0xdedbeef;
 
@@ -38,6 +40,59 @@ Thread::Thread(char* threadName)
     name = threadName;
     stackTop = NULL;
     stack = NULL;
+
+    int count;
+    if(++threadNum>128){ 
+        DEBUG(dbgThread,"Number Overflow");
+        threadNum--;
+        return;
+    }
+
+    for(count=0;count<128;count++){
+        if(threadId[count]==0){
+            setTid(count);
+            threadId[count]=1;
+            break;
+        }
+    }
+
+    setUid(GetUid());
+    setPriority(0);
+
+    status = JUST_CREATED;
+    for (int i = 0; i < MachineStateSize; i++) {
+	machineState[i] = NULL;		// not strictly necessary, since
+					// new thread ignores contents 
+					// of machine registers
+    }
+    space = NULL;
+}
+
+Thread::Thread(char* threadName,int priority)
+{
+    name = threadName;
+    stackTop = NULL;
+    stack = NULL;
+
+    int count;
+    if(++threadNum>128){ 
+        DEBUG(dbgThread,"Number Overflow");
+        threadNum--;
+        return;
+    }
+
+    for(count=0;count<128;count++){
+        if(threadId[count]==0){
+            setTid(count);
+            threadId[count]=1;
+            break;
+        }
+    }
+
+    setUid(GetUid());
+    setPriority(priority);
+
+
     status = JUST_CREATED;
     for (int i = 0; i < MachineStateSize; i++) {
 	machineState[i] = NULL;		// not strictly necessary, since
@@ -62,7 +117,8 @@ Thread::Thread(char* threadName)
 Thread::~Thread()
 {
     DEBUG(dbgThread, "Deleting thread: " << name);
-
+    threadNum--;
+    threadId[getTid()]=0;
     ASSERT(this != kernel->currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
@@ -423,6 +479,18 @@ SimpleThread(int which)
 //----------------------------------------------------------------------
 
 void
+Thread::setPriority(int priority)
+{
+    if(priority<0){
+        this->priority=0;
+    }else if(priority>6){
+        this->priority=6;
+    }else{
+        this->priority=priority;
+    }
+}
+
+void
 Thread::SelfTest()
 {
     DEBUG(dbgThread, "Entering Thread::SelfTest");
@@ -434,3 +502,80 @@ Thread::SelfTest()
     SimpleThread(0);
 }
 
+void
+Thread::SelfTest1()
+{
+    DEBUG(dbgThread, "Entering Thread::SelfTest1");
+
+    Thread *t1 = new Thread("forked thread1");
+    ThreadPrint(t1);
+    Thread *t2 = new Thread("forked thread2");
+    ThreadPrint(t2);
+    Thread *t3 = new Thread("forked thread3");
+    ThreadPrint(t3);
+    Thread *t4 = new Thread("forked thread4");
+    ThreadPrint(t4);
+
+    t1->Fork((VoidFunctionPtr) SimpleThread, t1->getTid());
+    t2->Fork((VoidFunctionPtr) SimpleThread, t2->getTid());
+    t3->Fork((VoidFunctionPtr) SimpleThread, t3->getTid());
+    t4->Fork((VoidFunctionPtr) SimpleThread, t4->getTid());
+
+}
+
+
+void
+Thread::SelfTest2()
+{
+    int count;
+    for(count=0;count<300;count++){
+        Thread *t = new Thread("forked thread1");
+        ThreadPrint(t);
+    }
+
+}
+
+void
+Thread::SelfTest3()
+{
+    DEBUG(dbgThread, "Entering Thread::SelfTest1");
+
+    Thread *t1 = new Thread("forked thread1",2);
+    ThreadPrint(t1);
+    Thread *t2 = new Thread("forked thread2",4);
+    ThreadPrint(t2);
+    Thread *t3 = new Thread("forked thread3",5);
+    ThreadPrint(t3);
+    Thread *t4 = new Thread("forked thread4",6);
+    ThreadPrint(t4);
+
+    t1->Fork((VoidFunctionPtr) SimpleThread, t1->getTid());
+    t2->Fork((VoidFunctionPtr) SimpleThread, t2->getTid());
+    t3->Fork((VoidFunctionPtr) SimpleThread, t3->getTid());
+    t4->Fork((VoidFunctionPtr) SimpleThread, t4->getTid());
+
+}
+
+int
+Thread::getTid()
+{
+    return this->tid;
+}
+
+void
+Thread::setTid(int tid)
+{
+    this->tid=tid;
+}
+
+void
+Thread::setUid(int uid)
+{
+    this->uid=uid;
+}
+
+int
+Thread::getPriority()
+{
+    return this->priority;
+}

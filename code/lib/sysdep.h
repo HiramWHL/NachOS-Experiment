@@ -71,4 +71,7 @@ extern bool PollSocket(int sockID);
 extern void ReadFromSocket(int sockID, char *buffer, int packetSize);
 extern void SendToSocket(int sockID, char *buffer, int packetSize,char *toName);
 
+extern int threadId[128];
+extern int GetUid();
+
 #endif // SYSDEP_H

@@ -83,6 +83,7 @@ class Thread {
 
   public:
     Thread(char* debugName);		// initialize a Thread 
+    Thread(char* debugName,int priority);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
 					// must not be running when delete 
@@ -102,9 +103,11 @@ class Thread {
     void CheckOverflow();   	// Check if thread stack has overflowed
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
-    void Print() { cout << name; }
+    void Print() { cout << name << ":" <<uid<<":"<<tid<<":"<<priority<<endl;}
     void SelfTest();		// test whether thread impl is working
-
+    void SelfTest1();
+    void SelfTest2();
+    void SelfTest3();
   private:
     // some of the private data for this class is listed above
     
@@ -124,11 +127,23 @@ class Thread {
 
     int userRegisters[NumTotalRegs];	// user-level CPU register state
 
+    static int threadNum;
+    int tid;
+    int uid;
+    int priority;
+
   public:
     void SaveUserState();		// save user-level register state
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
+    int getUid();
+    int getTid();
+    void setUid(int uid);
+    void setTid(int tid);
+    void setPriority(int priority);
+    int getPriority();
+
 };
 
 // external function, dummy routine whose sole job is to call Thread::Print

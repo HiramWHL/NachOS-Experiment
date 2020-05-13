@@ -146,7 +146,7 @@ Kernel::ThreadSelfTest() {
    
    LibSelfTest();		// test library routines
    
-   currentThread->SelfTest();	// test thread switching
+   currentThread->SelfTest1();	// test thread switching
    
    				// test semaphore operation
    semaphore = new Semaphore("test", 0);

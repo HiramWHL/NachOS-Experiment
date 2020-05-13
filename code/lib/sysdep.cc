@@ -33,6 +33,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+int threadId[128];
+
 #ifdef SOLARIS
 // KMS
 // for open()
@@ -582,4 +584,8 @@ SendToSocket(int sockID, char *buffer, int packetSize, char *toName)
     // We simply do nothing (drop the packet).
     // This may mask other kinds of failures, but it is the
     // right thing to do in the common case.
+}
+
+int GetUid(){
+    return getuid();
 }
