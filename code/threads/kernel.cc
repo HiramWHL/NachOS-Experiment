@@ -106,8 +106,8 @@ Kernel::Initialize()
 #else
     fileSystem = new FileSystem(formatFlag);
 #endif // FILESYS_STUB
-    postOfficeIn = new PostOfficeInput(10);
-    postOfficeOut = new PostOfficeOutput(reliability);
+    //postOfficeIn = new PostOfficeInput(10);
+    //postOfficeOut = new PostOfficeOutput(reliability);
 
     interrupt->Enable();
 }
@@ -146,15 +146,15 @@ Kernel::ThreadSelfTest() {
    
    LibSelfTest();		// test library routines
    
-   currentThread->SelfTest1();	// test thread switching
+   currentThread->TestPC1();	// test thread switching
    
-   				// test semaphore operation
+// test semaphore operation
    semaphore = new Semaphore("test", 0);
    semaphore->SelfTest();
    delete semaphore;
    
-   				// test locks, condition variables
-				// using synchronized lists
+    // test locks, condition variables
+    // using synchronized lists
    synchList = new SynchList<int>;
    synchList->SelfTest(9);
    delete synchList;

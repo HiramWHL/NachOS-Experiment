@@ -142,6 +142,7 @@ class Thread {
     void setUid(int uid);
     void setTid(int tid);
     void setPriority(int priority);
+    void TestPC1();
     int getPriority();
 
 };

@@ -495,11 +495,12 @@ Thread::SelfTest()
 {
     DEBUG(dbgThread, "Entering Thread::SelfTest");
 
-    Thread *t = new Thread("forked thread");
+    // Thread *t = new Thread("forked thread");
 
-    t->Fork((VoidFunctionPtr) SimpleThread, (void *) 1);
-    kernel->currentThread->Yield();
-    SimpleThread(0);
+    // t->Fork((VoidFunctionPtr) SimpleThread, (void *) 1);
+    // kernel->currentThread->Yield();
+    // SimpleThread(0);
+    TestPC1();
 }
 
 void
@@ -579,3 +580,83 @@ Thread::getPriority()
 {
     return this->priority;
 }
+
+
+int buf[30];
+int in;
+int out;
+// Semaphore* ssmutex;
+// Semaphore* full;
+// Semaphore* emptymutex;
+
+Lock* ssmutex;
+Lock* conditionlock1;
+Lock* conditionlock2;
+Condition* full;
+Condition* emptymutex;
+
+
+void Producer1(int times)
+{
+		int item;
+        conditionlock1->Acquire();
+		for(int i = 0;i <(int)times;i++)
+		{    
+				item =i;              
+                if(i!=0){
+                    full->Wait(conditionlock1);
+                }
+                printf("Produce a new item, item =%d\n",item);
+				ssmutex->Acquire();
+				buf[in]=item;
+				in=(in+1)%30;
+				ssmutex->Release();
+                conditionlock2->Acquire();
+				emptymutex->Signal(conditionlock2);
+                conditionlock2->Release();                									   				
+		}  
+					
+}
+
+
+void Consumer1(int times)
+{
+		int item=-1;
+        conditionlock2->Acquire();
+		for(int i = 0;i < (int)times;i++)
+		{
+				emptymutex->Wait(conditionlock2); 
+				ssmutex->Acquire();
+				item=buf[out];
+				out=(out+1)%30;
+				ssmutex->Release();
+                conditionlock1->Acquire();
+				full->Signal(conditionlock1);  
+                conditionlock1->Release();              
+				printf("Consume a item, item =%d\n",item);	
+		}						  						 
+}
+
+void 
+Thread::TestPC1()
+{
+		int count;
+		//init buffer
+		in=0;
+		out=0;
+		for (count=0;count<30;count++)
+		{
+			buf[count]=0;
+		}
+		ssmutex=new Lock("mutex");
+        conditionlock1=new Lock("lock1");
+        conditionlock2=new Lock("lock2");
+		full = new Condition("empty");
+		emptymutex = new Condition("full");
+
+        Thread *tc = new Thread("consumer process");
+        tc->Fork((VoidFunctionPtr)Consumer1,(void*)15);		
+        Thread * tp = new Thread("producer process");
+        tp->Fork((VoidFunctionPtr)Producer1,(void*)20);
+
+}   
