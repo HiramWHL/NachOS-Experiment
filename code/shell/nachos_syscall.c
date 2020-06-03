@@ -130,7 +130,7 @@ int Join(SpaceId id)
 int Create(char *name)
 {
     int fd;
-    fd=open(name, O_TRUNC | O_CREAT |  O_WRONLY);
+    fd=open(name, O_TRUNC | O_CREAT |  O_WRONLY,O_RDWR);
     if (fd>0) {
 	close(fd);
 	return 1;
